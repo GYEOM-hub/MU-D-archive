@@ -1,115 +1,77 @@
-const defaultSlides = [
-  {type:"HOOK", text:"우리는 매일\n수많은 감정을\n지나갑니다."},
-  {type:"QUESTION", text:"기뻤던 순간은\n사진으로 남기고,\n그때의 감정은\n어디에 남을까요?"},
-  {type:"STATEMENT", text:"그래서 우리는\n감정을 기록합니다."},
-  {type:"TRACE", text:"감정은 눈에 보이지 않지만\n분명 우리에게\n흔적을 남깁니다."},
-  {type:"ONLINE", text:"그리고 이제\n그 기록을\n한곳에서 만나보세요."},
-  {type:"ARCHIVE", text:"하나의 감정에서\n시작된 이야기"},
-  {type:"REFLECTION", text:"오늘의 감정이\n언젠가 나를 설명하는\n기록이 될 수 있도록."},
-  {type:"CTA", text:"당신에게도\n기록하고 싶은\n감정이 있나요?"}
+const templates = [
+  {id:"image",name:"IMAGE",desc:"사진 중심",className:"t-image"},
+  {id:"editorial",name:"EDITORIAL",desc:"사진 + 큰 타이포",className:"t-editorial"},
+  {id:"archive",name:"ARCHIVE",desc:"사진 + 메타데이터",className:"t-archive"},
+  {id:"story",name:"STORY",desc:"사진 + 이야기",className:"t-story"},
+  {id:"product",name:"PRODUCT",desc:"제품 중심",className:"t-product"},
+  {id:"full",name:"FULL BLEED",desc:"전체 이미지",className:"t-full"}
 ];
 
-let slides = [...defaultSlides];
-let current = 0;
+let currentTemplate="image";
+let imageSrc="";
+let slides=[{title:"불안을 입는다는 것",body:"감정을 숨기지 않고\n그대로 기록합니다.",meta:"MU:D ARCHIVE / 2026"}];
+let currentSlide=0;
 
-const card = document.querySelector("#card");
-const counter = document.querySelector("#counter");
-const dots = document.querySelector("#dots");
-const idea = document.querySelector("#idea");
-const generate = document.querySelector("#generate");
-
-function render() {
-  const slide = slides[current];
-  card.querySelector(".card-label").textContent =
-    String(current + 1).padStart(2, "0") + " — " + (slide.type || "SLIDE");
-  card.querySelector(".card h2").innerHTML =
-    (slide.text || "").replaceAll("\\n", "<br>");
-  counter.textContent =
-    String(current + 1).padStart(2, "0") + " / " + String(slides.length).padStart(2, "0");
-  dots.innerHTML = slides.map((_, i) =>
-    '<button class="dot ' + (i === current ? "active" : "") + '" data-index="' + i + '" aria-label="slide ' + (i + 1) + '"></button>'
-  ).join("");
-  dots.querySelectorAll(".dot").forEach(btn => {
-    btn.onclick = () => { current = Number(btn.dataset.index); render(); };
-  });
+const $=s=>document.querySelector(s);
+const esc=s=>String(s||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+function renderTemplates(){
+  $("#templateList").innerHTML=templates.map(t=>'<button class="template-btn '+(t.id===currentTemplate?"active":"")+'" data-id="'+t.id+'"><b>'+t.name+'</b><small>'+t.desc+'</small></button>').join("");
+  document.querySelectorAll(".template-btn").forEach(b=>b.onclick=()=>{currentTemplate=b.dataset.id;render();});
+  $("#library").innerHTML=templates.map(t=>'<button class="library-card '+t.className+'" data-id="'+t.id+'"><span>'+t.name+'</span><b>'+t.desc+'</b></button>').join("");
+  document.querySelectorAll(".library-card").forEach(b=>b.onclick=()=>{currentTemplate=b.dataset.id;$("#editor").scrollIntoView({behavior:"smooth"});render();});
 }
-
-function showStatus(message) {
-  let status = document.querySelector("#status");
-  if (!status) {
-    status = document.createElement("p");
-    status.id = "status";
-    status.className = "status-message";
-    generate.parentElement.appendChild(status);
-  }
-  status.textContent = message;
+function loadFields(){
+  const s=slides[currentSlide];
+  $("#titleInput").value=s.title||"";
+  $("#bodyInput").value=s.body||"";
+  $("#metaInput").value=s.meta||"";
 }
-
-document.querySelector("#prev").onclick = () => {
-  current = (current - 1 + slides.length) % slides.length;
-  render();
+function render(){
+  renderTemplates();
+  const s=slides[currentSlide];
+  const image=imageSrc?'<img src="'+imageSrc+'" style="object-position:'+$("#posX").value+'% '+$("#posY").value+'%;transform:scale('+Number($("#zoom").value)/100+')">':'<div class="empty-image">DROP<br>IMAGE</div>';
+  $("#canvas").className="card-canvas "+templates.find(t=>t.id===currentTemplate).className;
+  $("#canvas").innerHTML=image+
+    '<div class="card-meta">'+esc(s.meta)+'</div>'+
+    '<div class="card-copy"><h3>'+esc(s.title).replaceAll("\n","<br>")+'</h3><p>'+esc(s.body).replaceAll("\n","<br>")+'</p></div>'+
+    '<div class="card-index">'+String(currentSlide+1).padStart(2,"0")+' / '+String(slides.length).padStart(2,"0")+'</div>';
+  $("#templateName").textContent=templates.find(t=>t.id===currentTemplate).name;
+  $("#slideList").innerHTML=slides.map((_,i)=>'<button class="'+(i===currentSlide?"active":"")+'">'+String(i+1).padStart(2,"0")+'</button>').join("");
+  document.querySelectorAll("#slideList button").forEach((b,i)=>b.onclick=()=>{currentSlide=i;loadFields();render();});
+  loadFields();
+}
+$("#imageInput").onchange=e=>{
+  const file=e.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{imageSrc=reader.result;render();};
+  reader.readAsDataURL(file);
 };
-
-document.querySelector("#next").onclick = () => {
-  current = (current + 1) % slides.length;
-  render();
-};
-
-document.addEventListener("keydown", e => {
-  if (e.key === "ArrowLeft") document.querySelector("#prev").click();
-  if (e.key === "ArrowRight") document.querySelector("#next").click();
+["titleInput","bodyInput","metaInput"].forEach(id=>$("#"+id).oninput=()=>{
+  slides[currentSlide][id.replace("Input","")]= $("#"+id).value; renderCanvasOnly();
 });
-
-generate.onclick = async () => {
-  const value = idea.value.trim();
-  if (!value) {
-    idea.focus();
-    showStatus("먼저 전하고 싶은 이야기를 입력해주세요.");
-    return;
-  }
-
-  generate.disabled = true;
-  generate.innerHTML = "GENERATING... <span>· · ·</span>";
-  showStatus("MU:D ARCHIVE의 언어로 이야기를 구성하고 있어.");
-
-  try {
-    const response = await fetch("/api/generate", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({idea: value, count: 8})
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "생성에 실패했습니다.");
-
-    slides = data.slides;
-    current = 0;
-    render();
-    showStatus("완료. 아래 카드에서 각 장면을 확인해봐.");
-    document.querySelector(".preview-section").scrollIntoView({behavior:"smooth", block:"center"});
-  } catch (error) {
-    showStatus(error.message);
-  } finally {
-    generate.disabled = false;
-    generate.innerHTML = "GENERATE CARD NEWS <span>→</span>";
-  }
-};
-
-const grid = document.querySelector("#sampleGrid");
-function renderSampleGrid() {
-  grid.innerHTML = "";
-  slides.forEach((slide, i) => {
-    const item = document.createElement("button");
-    item.className = "sample-item";
-    item.innerHTML = "<span>" + String(i + 1).padStart(2, "0") + " — " + (slide.type || "SLIDE") + "</span><strong>" +
-      (slide.text || "").replaceAll("\\n", "<br>") + "</strong>";
-    item.onclick = () => {
-      current = i;
-      render();
-      document.querySelector(".preview-section").scrollIntoView({behavior:"smooth", block:"center"});
-    };
-    grid.appendChild(item);
-  });
+["posX","posY","zoom"].forEach(id=>$("#"+id).oninput=renderCanvasOnly);
+function renderCanvasOnly(){
+  const s=slides[currentSlide];
+  const c=$("#canvas");
+  const img=c.querySelector("img");
+  if(img){img.style.objectPosition=$("#posX").value+"% "+$("#posY").value+"%";img.style.transform="scale("+Number($("#zoom").value)/100+")";}
+  const meta=c.querySelector(".card-meta"), h=c.querySelector("h3"), p=c.querySelector("p");
+  if(meta)meta.textContent=s.meta||"";
+  if(h)h.innerHTML=esc(s.title).replaceAll("\n","<br>");
+  if(p)p.innerHTML=esc(s.body).replaceAll("\n","<br>");
 }
-
-renderSampleGrid();
+$("#addSlide").onclick=()=>{slides.push({title:"새로운 이야기",body:"여기에 내용을 입력하세요.",meta:"MU:D ARCHIVE"});currentSlide=slides.length-1;render();};
+$("#duplicate").onclick=()=>{slides.push({...slides[currentSlide]});currentSlide=slides.length-1;render();};
+$("#download").onclick=async()=>{
+  const c=$("#canvas"); const clone=c.cloneNode(true);
+  clone.style.position="fixed";clone.style.left="-10000px";clone.style.width="1080px";clone.style.height="1350px";
+  document.body.appendChild(clone);
+  const script=document.createElement("script");
+  script.src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
+  document.head.appendChild(script);
+  await new Promise(r=>script.onload=r);
+  const canvas=await window.html2canvas(clone,{width:1080,height:1350,scale:1,useCORS:true});
+  const a=document.createElement("a");a.download="mud-archive-"+String(currentSlide+1).padStart(2,"0")+".png";a.href=canvas.toDataURL("image/png");a.click();
+  clone.remove();
+};
 render();
