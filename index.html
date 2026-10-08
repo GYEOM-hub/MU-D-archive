@@ -3,63 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MU:D ARCHIVE — Content Studio</title>
+  <title>MU:D ARCHIVE — Card News Studio</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="/">MU:D <span>ARCHIVE</span></a>
-    <span class="status">CONTENT STUDIO / 01</span>
+    <nav><a href="#studio">CARD NEWS STUDIO</a><a href="#templates">TEMPLATES</a></nav>
+    <span class="status">LOCAL / NO API</span>
   </header>
 
-  <main class="studio">
-    <section class="intro">
-      <p class="eyebrow">MU:D ARCHIVE CONTENT STUDIO</p>
-      <h1>감정을<br><em>기록하는</em> 콘텐츠.</h1>
-      <p class="description">전하고 싶은 이야기를 입력하면<br>MU:D ARCHIVE의 언어와 미감으로 카드뉴스를 구성합니다.</p>
-      <div class="input-wrap">
-        <label for="idea">WHAT DO YOU WANT TO SAY?</label>
-        <textarea id="idea" placeholder="예: 이번 신제품은 불안을 마주하는 감정에서 시작됐다는 이야기를 하고 싶어."></textarea>
-        <button id="generate">GENERATE CARD NEWS <span>→</span></button>
-      </div>
+  <main>
+    <section class="hero" id="studio">
+      <p class="eyebrow">MU:D ARCHIVE / CARD NEWS STUDIO</p>
+      <h1>사진 하나로<br><em>이야기를 만드세요.</em></h1>
+      <p>사진을 올리고, 텍스트와 레이아웃을 직접 수정해<br>MU:D ARCHIVE의 카드뉴스를 만듭니다.</p>
+      <a class="start" href="#editor">OPEN STUDIO →</a>
     </section>
 
-    <section class="preview-section">
-      <div class="preview-head">
-        <span>PREVIEW</span>
-        <span id="counter">01 / 08</span>
-      </div>
-      <div class="preview-frame">
-        <div id="card" class="card">
-          <div class="card-meta">MU:D ARCHIVE</div>
-          <div class="card-content">
-            <span class="card-label">01 — HOOK</span>
-            <h2>우리는 매일<br>수많은 감정을<br>지나갑니다.</h2>
-          </div>
-          <div class="card-footer">WE ARCHIVE WHAT REMAINS.</div>
+    <section class="editor" id="editor">
+      <aside class="panel">
+        <div class="panel-title">CARD NEWS / EDITOR</div>
+
+        <label>1. TEMPLATE</label>
+        <div class="template-list" id="templateList"></div>
+
+        <label>2. IMAGE</label>
+        <input id="imageInput" type="file" accept="image/*">
+        <div class="file-note">사진은 서버로 전송되지 않습니다.</div>
+
+        <label>3. TEXT</label>
+        <textarea id="titleInput" rows="3" placeholder="카드에 들어갈 제목"></textarea>
+        <textarea id="bodyInput" rows="4" placeholder="짧은 설명 또는 이야기"></textarea>
+        <input id="metaInput" placeholder="예: MU:D ARCHIVE / 2026.10.08">
+
+        <label>4. IMAGE POSITION</label>
+        <div class="range-row"><span>X</span><input id="posX" type="range" min="0" max="100" value="50"></div>
+        <div class="range-row"><span>Y</span><input id="posY" type="range" min="0" max="100" value="50"></div>
+        <div class="range-row"><span>ZOOM</span><input id="zoom" type="range" min="100" max="180" value="100"></div>
+
+        <div class="actions">
+          <button id="duplicate">DUPLICATE TEMPLATE</button>
+          <button id="download">DOWNLOAD PNG</button>
         </div>
-      </div>
-      <div class="controls">
-        <button id="prev" aria-label="previous">←</button>
-        <div id="dots"></div>
-        <button id="next" aria-label="next">→</button>
-      </div>
+      </aside>
+
+      <section class="workspace">
+        <div class="workspace-head"><span>1080 × 1350</span><span id="templateName">IMAGE</span></div>
+        <div class="canvas-wrap"><div id="canvas" class="card-canvas"></div></div>
+        <div class="slide-tools">
+          <button id="addSlide">＋ ADD CARD</button>
+          <div id="slideList"></div>
+        </div>
+      </section>
+    </section>
+
+    <section class="templates" id="templates">
+      <p class="eyebrow">TEMPLATE LIBRARY</p>
+      <h2>카드뉴스를<br><em>원하는 방식으로.</em></h2>
+      <div class="library" id="library"></div>
     </section>
   </main>
 
-  <section class="sample">
-    <div>
-      <p class="eyebrow">SAMPLE ARCHIVE</p>
-      <h2>감정을 기록하는<br>8개의 장면</h2>
-    </div>
-    <div class="sample-grid" id="sampleGrid"></div>
-  </section>
-
-  <footer>
-    <span>MU:D ARCHIVE</span>
-    <span>AN ARCHIVE OF EMOTIONS EXPRESSED THROUGH OBJECTS.</span>
-  </footer>
-
+  <footer><span>MU:D ARCHIVE</span><span>AN ARCHIVE OF EMOTIONS EXPRESSED THROUGH OBJECTS.</span></footer>
   <script src="app.js"></script>
 </body>
 </html>
